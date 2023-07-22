@@ -1,0 +1,49 @@
+# 查看 workflow 的文档来获取更多信息
+# @see https://github.com/crazy-max/ghaction-github-pages
+
+name: mine-website-ui-admin CI
+
+# 在master分支发生push事件时触发。
+on:
+  push:
+    branches: [ master ]
+  # pull_request:
+  #   branches: [ master ]
+
+env: # 设置环境变量
+  TZ: Asia/Shanghai # 时区（设置时区可使页面中的`最近更新时间`使用时区时间）
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node_version: [16.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    # 使用的动作。格式：userName/repoName。作用：检出仓库，获取源码。 官方actions库：https://github.com/actions
+    steps:
+      - name: Step 1 Checkout
+        uses: actions/checkout@v3
+
+      - name: Step 2 Set Node Version to ${{ matrix.node_version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node_version }}
+
+      - name: Step 4 Install deps
+        run: node --version && npm run i
+
+      - name: Step 5 Build
+        run: npm run build:pro
+
+      - name: Step 6 删除旧dist
+        run: sshpass -p ${{secrets.SERVER_PASSWORD}} ssh -p ${{ secrets.SERVER_PORT }} -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{secrets.SERVER_IP}} "cd ${{ secrets.SERVER_DESTINATION_ADMIN }} && rm -rf ./*"
+
+      - name: Step 7 上传新dist
+        run: sshpass -p ${{secrets.SERVER_PASSWORD}} scp -P ${{ secrets.SERVER_PORT }} -r -o StrictHostKeyChecking=no ./dist-pro/* ${{ secrets.SERVER_USERNAME }}@${{secrets.SERVER_IP}}:${{ secrets.SERVER_DESTINATION_ADMIN }}
