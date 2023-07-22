@@ -37,7 +37,7 @@ jobs:
           node-version: ${{ matrix.node_version }}
 
       - name: Step 4 Install deps
-        run: node --version && npm run i
+        run: node --version && npm install pnpm && npm run i
 
       - name: Step 5 Build
         run: npm run build:pro
