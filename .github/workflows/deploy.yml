@@ -3,10 +3,12 @@
 
 name: mine-website-ui-admin CI
 
-# 在master分支发生push事件时触发。
+# 在push了deploy标签的tag时候触发。
 on:
   push:
-    branches: [ master ]
+    tags:
+      - "deploy*"
+  #  branches: [ master ]
   # pull_request:
   #   branches: [ master ]
 
